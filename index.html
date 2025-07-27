@@ -1,43 +1,94 @@
+```html
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>日汉互译练习</title>
+  <style>
+    body {
+      font-family: "Arial", sans-serif;
+      background: linear-gradient(to bottom, #d8f3dc, #fefae0);
+      color: #333;
+      padding: 20px;
+      max-width: 800px;
+      margin: auto;
+      border-radius: 16px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h1 {
+      text-align: center;
+      color: #2d6a4f;
+    }
+    textarea {
+      width: 100%;
+      height: 120px;
+      margin-bottom: 10px;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      resize: vertical;
+    }
+    button {
+      padding: 10px 20px;
+      background-color: #40916c;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background-color: #2d6a4f;
+    }
+    .result {
+      margin-top: 20px;
+      background: #ffffffd1;
+      padding: 15px;
+      border-radius: 12px;
+      border: 1px dashed #74c69d;
+    }
+  </style>
 </head>
 <body>
-  <h1>日汉互译练习</h1>
-  <textarea id="source" placeholder="请输入日文或中文原文"></textarea><br>
-  <textarea id="user" placeholder="请输入你的翻译"></textarea><br>
-  <button onclick="analyze()">提交</button>
-  <pre id="output"></pre>
+  <h1>🌸 日汉互译练习 🌳</h1>
+
+  <label for="original">原文（日语或中文）：</label>
+  <textarea id="original" placeholder="请输入日语或中文原文..."></textarea>
+
+  <label for="user-translation">你的翻译：</label>
+  <textarea id="user-translation" placeholder="请输入你的翻译..."></textarea>
+
+  <button onclick="submitTranslation()">提交翻译</button>
+
+  <div class="result" id="result"></div>
 
   <script>
-    async function analyze() {
-      const source = document.getElementById('source').value;
-      const user = document.getElementById('user').value;
-      const output = document.getElementById('output');
-      
-      output.textContent = "正在分析，请稍等...";
+    async function submitTranslation() {
+      const original = document.getElementById('original').value.trim();
+      const userTranslation = document.getElementById('user-translation').value.trim();
 
-      const result = await fetch("https://api.deepseek.com/chat/completions", {
+      const prompt = `你是一名日中翻译专家。请根据以下原文和用户的翻译，从以下几个角度进行点评：1）语法是否准确 2）词语是否自然 3）是否保留原意。最后请给出一个10分满分的评分，并附上标准译文。\n\n原文：${original}\n\n用户翻译：${userTranslation}`;
+
+      const response = await fetch("https://api.deepseek.com/v1/chat/completions", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": "Bearer sk-9ee10cfefb794162aa134697b245f0d3" // ← 替换为你自己的 DeepSeek API Key
+          "Authorization": "Bearer 你的DeepSeek API Key"
         },
         body: JSON.stringify({
           model: "deepseek-chat",
           messages: [
-            { role: "system", content: "你是一位精通日汉翻译的专家，请根据原文和用户的翻译进行点评分析，并提供标准译文。" },
-            { role: "user", content: `原文：${source}\n用户翻译：${user}` }
+            { role: "user", content: prompt }
           ]
         })
       });
 
-      const json = await result.json();
-      output.textContent = json.choices?.[0]?.message?.content || "返回失败，请检查API Key或内容。";
+      const data = await response.json();
+      const output = data.choices?.[0]?.message?.content || "发生错误，请检查API KEY是否正确。";
+      document.getElementById("result").innerText = output;
     }
   </script>
 </body>
 </html>
+```
