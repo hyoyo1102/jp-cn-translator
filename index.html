@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>日汉互译练习</title>
+</head>
+<body>
+  <h1>日汉互译练习</h1>
+  <textarea id="source" placeholder="请输入日文或中文原文"></textarea><br>
+  <textarea id="user" placeholder="请输入你的翻译"></textarea><br>
+  <button onclick="analyze()">提交</button>
+  <pre id="output"></pre>
+
+  <script>
+    async function analyze() {
+      const source = document.getElementById('source').value;
+      const user = document.getElementById('user').value;
+      const output = document.getElementById('output');
+      
+      output.textContent = "正在分析，请稍等...";
+
+      const result = await fetch("https://api.deepseek.com/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer sk-9ee10cfefb794162aa134697b245f0d3" // ← 替换为你自己的 DeepSeek API Key
+        },
+        body: JSON.stringify({
+          model: "deepseek-chat",
+          messages: [
+            { role: "system", content: "你是一位精通日汉翻译的专家，请根据原文和用户的翻译进行点评分析，并提供标准译文。" },
+            { role: "user", content: `原文：${source}\n用户翻译：${user}` }
+          ]
+        })
+      });
+
+      const json = await result.json();
+      output.textContent = json.choices?.[0]?.message?.content || "返回失败，请检查API Key或内容。";
+    }
+  </script>
+</body>
+</html>
